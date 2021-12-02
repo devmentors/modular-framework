@@ -1,11 +1,10 @@
-﻿namespace Modular.Abstractions.Queries
-{
-    //Marker
-    public interface IQuery
-    {
-    }
+﻿namespace Modular.Abstractions.Queries;
 
-    public interface IQuery<T> : IQuery
-    {
-    }
+//Marker
+public interface IQuery
+{
+}
+
+public interface IQuery<T> : IQuery
+{
 }

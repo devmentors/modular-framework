@@ -1,7 +1,6 @@
-﻿namespace Modular.Infrastructure.Messaging.Dispatchers
+﻿namespace Modular.Infrastructure.Messaging.Dispatchers;
+
+public class MessagingOptions
 {
-    public class MessagingOptions
-    {
-        public bool UseAsyncDispatcher { get; set; }
-    }
+    public bool UseAsyncDispatcher { get; set; }
 }

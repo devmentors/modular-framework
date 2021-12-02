@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace Modular.Abstractions.Exceptions
+namespace Modular.Abstractions.Exceptions;
+
+public interface IExceptionToResponseMapper
 {
-    public interface IExceptionToResponseMapper
-    {
-        ExceptionResponse Map(Exception exception);
-    }
+    ExceptionResponse Map(Exception exception);
 }

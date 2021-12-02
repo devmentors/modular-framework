@@ -4,7 +4,7 @@
 
 ## About
 
-Modular framework is a set of helpful components for building the modular applications, especially based on [modular monolith](https://www.infoq.com/news/2019/09/design-ddd-modular-monolith/) architecture. The code is written in C# language using the latest version of .NET framework for cross-platform capabilities. The project isn't published as NuGet package, so it's best to clone it and adjust to your own needs. Solution is split into 2 separate projects:
+Modular framework is a set of helpful components for building the modular applications, especially based on **[Modular Monolith](https://modularmonolith.net)** architecture. The code is written in C# language using the latest version of .NET framework for cross-platform capabilities. The project isn't published as NuGet package, so it's best to clone it and adjust to your own needs. Solution is split into 2 separate projects:
  - **Abstractions** - mostly set of interfaces that can be easily injected into your code
  - **Infrastructure** - the actual code implementing the provided public abstractions
 
@@ -32,7 +32,9 @@ Within the modular framework, you can find the following components:
 - [Inflow](https://github.com/devmentors/Inflow) - virtual payments platform
 - [Template](https://github.com/devmentors/modular-monolith-template) - basic template with empty modules
   
-## Tutorials
+## Resources
 
-- [Building Modular Monolith](https://www.youtube.com/c/DevMentors/videos) series on YouTube
-- [Modular Monolith](https://devmentors.io/courses) premium course - coming soon!
+- [Comprehensive course](https://devmentors.io/courses/modular-monolith) on our learning [platform](https://devmentors.io)
+- [Mini-course](https://www.youtube.com/watch?v=MkdutzVB3pY) on YouTube
+- [Building Modular Monolith](https://www.youtube.com/playlist?list=PLqqD43D6Mqz1QLbHRgQ-poMpBpJ4lYi42) series on YouTube
+- [Knowledge base](https://modular-monolith.knowledge.devmentors.io) with articles

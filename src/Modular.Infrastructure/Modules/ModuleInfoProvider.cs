@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace Modular.Infrastructure.Modules
+namespace Modular.Infrastructure.Modules;
+
+public class ModuleInfoProvider
 {
-    public class ModuleInfoProvider
-    {
-        public List<ModuleInfo> Modules { get; } = new();
-    }
+    public List<ModuleInfo> Modules { get; } = new();
 }

@@ -1,11 +1,10 @@
 ﻿using System;
 using Modular.Abstractions.Contexts;
 
-namespace Modular.Abstractions.Messaging
+namespace Modular.Abstractions.Messaging;
+
+public interface IMessageContext
 {
-    public interface IMessageContext
-    {
-        public Guid MessageId { get; }
-        public IContext Context { get; }
-    }
+    public Guid MessageId { get; }
+    public IContext Context { get; }
 }

@@ -2,11 +2,10 @@
 using System.Threading.Tasks;
 using Modular.Abstractions.Messaging;
 
-namespace Modular.Infrastructure.Messaging.Dispatchers
+namespace Modular.Infrastructure.Messaging.Dispatchers;
+
+public interface IAsyncMessageDispatcher
 {
-    public interface IAsyncMessageDispatcher
-    {
-        Task PublishAsync<TMessage>(TMessage message, CancellationToken cancellationToken = default)
-            where TMessage : class, IMessage;
-    }
+    Task PublishAsync<TMessage>(TMessage message, CancellationToken cancellationToken = default)
+        where TMessage : class, IMessage;
 }

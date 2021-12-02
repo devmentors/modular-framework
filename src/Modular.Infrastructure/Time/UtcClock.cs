@@ -1,10 +1,9 @@
 ﻿using System;
 using Modular.Abstractions.Time;
 
-namespace Modular.Infrastructure.Time
+namespace Modular.Infrastructure.Time;
+
+public class UtcClock : IClock
 {
-    public class UtcClock : IClock
-    {
-        public DateTime CurrentDate() => DateTime.UtcNow;
-    }
+    public DateTime CurrentDate() => DateTime.UtcNow;
 }

@@ -1,11 +1,10 @@
-namespace Modular.Infrastructure.Security.Encryption
+namespace Modular.Infrastructure.Security.Encryption;
+
+public interface ISecurityProvider
 {
-    public interface ISecurityProvider
-    {
-        string Encrypt(string data);
-        string Decrypt(string data);
-        string Hash(string data);
-        string Rng(int length = 50, bool removeSpecialChars = true);
-        string Sanitize(string value);
-    }
+    string Encrypt(string data);
+    string Decrypt(string data);
+    string Hash(string data);
+    string Rng(int length = 50, bool removeSpecialChars = true);
+    string Sanitize(string value);
 }

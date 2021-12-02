@@ -1,6 +1,5 @@
-﻿namespace Modular.Abstractions.Messaging
+﻿namespace Modular.Abstractions.Messaging;
+
+public interface IMessage
 {
-    public interface IMessage
-    {
-    }
 }

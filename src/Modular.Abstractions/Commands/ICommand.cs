@@ -1,9 +1,8 @@
 ﻿using Modular.Abstractions.Messaging;
 
-namespace Modular.Abstractions.Commands
+namespace Modular.Abstractions.Commands;
+
+//Marker
+public interface ICommand : IMessage
 {
-    //Marker
-    public interface ICommand : IMessage
-    {
-    }
 }

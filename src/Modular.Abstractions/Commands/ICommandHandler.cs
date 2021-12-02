@@ -1,10 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Modular.Abstractions.Commands
+namespace Modular.Abstractions.Commands;
+
+public interface ICommandHandler<in TCommand> where TCommand : class, ICommand
 {
-    public interface ICommandHandler<in TCommand> where TCommand : class, ICommand
-    {
-        Task HandleAsync(TCommand command, CancellationToken cancellationToken = default);
-    }
+    Task HandleAsync(TCommand command, CancellationToken cancellationToken = default);
 }

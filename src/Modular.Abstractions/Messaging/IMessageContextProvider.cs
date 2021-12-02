@@ -1,7 +1,6 @@
-﻿namespace Modular.Abstractions.Messaging
+﻿namespace Modular.Abstractions.Messaging;
+
+public interface IMessageContextProvider
 {
-    public interface IMessageContextProvider
-    {
-        IMessageContext Get(IMessage message);
-    }
+    IMessageContext Get(IMessage message);
 }

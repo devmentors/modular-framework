@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace Modular.Abstractions.Contracts
+namespace Modular.Abstractions.Contracts;
+
+public interface IContract
 {
-    public interface IContract
-    {
-        Type Type { get; }
-        public IEnumerable<string> Required { get; }
-    }
+    Type Type { get; }
+    public IEnumerable<string> Required { get; }
 }

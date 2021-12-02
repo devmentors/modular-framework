@@ -13,102 +13,101 @@ using Modular.Abstractions.Commands;
 using Modular.Abstractions.Events;
 using Modular.Abstractions.Modules;
 
-namespace Modular.Infrastructure.Modules
+namespace Modular.Infrastructure.Modules;
+
+public static class Extensions
 {
-    public static class Extensions
+    public static IServiceCollection AddModuleInfo(this IServiceCollection services, IList<IModule> modules)
     {
-        public static IServiceCollection AddModuleInfo(this IServiceCollection services, IList<IModule> modules)
-        {
-            var moduleInfoProvider = new ModuleInfoProvider();
-            var moduleInfo =
-                modules?.Select(x => new ModuleInfo(x.Name, x.Policies ?? Enumerable.Empty<string>())) ??
-                Enumerable.Empty<ModuleInfo>();
-            moduleInfoProvider.Modules.AddRange(moduleInfo);
-            services.AddSingleton(moduleInfoProvider);
+        var moduleInfoProvider = new ModuleInfoProvider();
+        var moduleInfo =
+            modules?.Select(x => new ModuleInfo(x.Name, x.Policies ?? Enumerable.Empty<string>())) ??
+            Enumerable.Empty<ModuleInfo>();
+        moduleInfoProvider.Modules.AddRange(moduleInfo);
+        services.AddSingleton(moduleInfoProvider);
 
-            return services;
-        }
+        return services;
+    }
 
-        public static void MapModuleInfo(this IEndpointRouteBuilder endpoint)
+    public static void MapModuleInfo(this IEndpointRouteBuilder endpoint)
+    {
+        endpoint.MapGet("modules", context =>
         {
-            endpoint.MapGet("modules", context =>
-            {
-                var moduleInfoProvider = context.RequestServices.GetRequiredService<ModuleInfoProvider>();
-                return context.Response.WriteAsJsonAsync(moduleInfoProvider.Modules);
-            });
-        }
+            var moduleInfoProvider = context.RequestServices.GetRequiredService<ModuleInfoProvider>();
+            return context.Response.WriteAsJsonAsync(moduleInfoProvider.Modules);
+        });
+    }
         
-        public static IHostBuilder ConfigureModules(this IHostBuilder builder)
-            => builder.ConfigureAppConfiguration((ctx, cfg) =>
+    public static IHostBuilder ConfigureModules(this IHostBuilder builder)
+        => builder.ConfigureAppConfiguration((ctx, cfg) =>
+        {
+            foreach (var settings in GetSettings("*"))
             {
-                foreach (var settings in GetSettings("*"))
-                {
-                    cfg.AddJsonFile(settings);
-                }
+                cfg.AddJsonFile(settings);
+            }
 
-                foreach (var settings in GetSettings($"*.{ctx.HostingEnvironment.EnvironmentName}"))
-                {
-                    cfg.AddJsonFile(settings);
-                }
+            foreach (var settings in GetSettings($"*.{ctx.HostingEnvironment.EnvironmentName}"))
+            {
+                cfg.AddJsonFile(settings);
+            }
 
-                IEnumerable<string> GetSettings(string pattern)
-                    => Directory.EnumerateFiles(ctx.HostingEnvironment.ContentRootPath,
-                        $"module.{pattern}.json", SearchOption.AllDirectories);
-            });
+            IEnumerable<string> GetSettings(string pattern)
+                => Directory.EnumerateFiles(ctx.HostingEnvironment.ContentRootPath,
+                    $"module.{pattern}.json", SearchOption.AllDirectories);
+        });
         
-        public static IServiceCollection AddModuleRequests(this IServiceCollection services, IList<Assembly> assemblies)
-        {
-            services.AddModuleRegistry(assemblies);
-            services.AddSingleton<IModuleClient, ModuleClient>();
-            // services.AddSingleton<IModuleSerializer, JsonModuleSerializer>();
-            services.AddSingleton<IModuleSerializer, MessagePackModuleSerializer>();
-            services.AddSingleton<IModuleSubscriber, ModuleSubscriber>();
+    public static IServiceCollection AddModuleRequests(this IServiceCollection services, IList<Assembly> assemblies)
+    {
+        services.AddModuleRegistry(assemblies);
+        services.AddSingleton<IModuleClient, ModuleClient>();
+        // services.AddSingleton<IModuleSerializer, JsonModuleSerializer>();
+        services.AddSingleton<IModuleSerializer, MessagePackModuleSerializer>();
+        services.AddSingleton<IModuleSubscriber, ModuleSubscriber>();
 
-            return services;
-        }
+        return services;
+    }
 
-        public static IModuleSubscriber UseModuleRequests(this IApplicationBuilder app)
-            => app.ApplicationServices.GetRequiredService<IModuleSubscriber>();
+    public static IModuleSubscriber UseModuleRequests(this IApplicationBuilder app)
+        => app.ApplicationServices.GetRequiredService<IModuleSubscriber>();
 
-        private static void AddModuleRegistry(this IServiceCollection services, IEnumerable<Assembly> assemblies)
-        {
-            var registry = new ModuleRegistry();
-            var types = assemblies.SelectMany(x => x.GetTypes()).ToArray();
+    private static void AddModuleRegistry(this IServiceCollection services, IEnumerable<Assembly> assemblies)
+    {
+        var registry = new ModuleRegistry();
+        var types = assemblies.SelectMany(x => x.GetTypes()).ToArray();
             
-            var commandTypes = types
-                .Where(t => t.IsClass && typeof(ICommand).IsAssignableFrom(t))
-                .ToArray();
+        var commandTypes = types
+            .Where(t => t.IsClass && typeof(ICommand).IsAssignableFrom(t))
+            .ToArray();
             
-            var eventTypes = types
-                .Where(x => x.IsClass && typeof(IEvent).IsAssignableFrom(x))
-                .ToArray();
+        var eventTypes = types
+            .Where(x => x.IsClass && typeof(IEvent).IsAssignableFrom(x))
+            .ToArray();
 
-            services.AddSingleton<IModuleRegistry>(sp =>
+        services.AddSingleton<IModuleRegistry>(sp =>
+        {
+            var commandDispatcher = sp.GetRequiredService<ICommandDispatcher>();
+            var commandDispatcherType = commandDispatcher.GetType();
+                
+            var eventDispatcher = sp.GetRequiredService<IEventDispatcher>();
+            var eventDispatcherType = eventDispatcher.GetType();
+
+            foreach (var type in commandTypes)
             {
-                var commandDispatcher = sp.GetRequiredService<ICommandDispatcher>();
-                var commandDispatcherType = commandDispatcher.GetType();
+                registry.AddBroadcastAction(type, (@event, cancellationToken) =>
+                    (Task) commandDispatcherType.GetMethod(nameof(commandDispatcher.SendAsync))
+                        ?.MakeGenericMethod(type)
+                        .Invoke(commandDispatcher, new[] {@event, cancellationToken}));
+            }
                 
-                var eventDispatcher = sp.GetRequiredService<IEventDispatcher>();
-                var eventDispatcherType = eventDispatcher.GetType();
+            foreach (var type in eventTypes)
+            {
+                registry.AddBroadcastAction(type, (@event, cancellationToken) =>
+                    (Task) eventDispatcherType.GetMethod(nameof(eventDispatcher.PublishAsync))
+                        ?.MakeGenericMethod(type)
+                        .Invoke(eventDispatcher, new[] {@event, cancellationToken}));
+            }
 
-                foreach (var type in commandTypes)
-                {
-                    registry.AddBroadcastAction(type, (@event, cancellationToken) =>
-                        (Task) commandDispatcherType.GetMethod(nameof(commandDispatcher.SendAsync))
-                            ?.MakeGenericMethod(type)
-                            .Invoke(commandDispatcher, new[] {@event, cancellationToken}));
-                }
-                
-                foreach (var type in eventTypes)
-                {
-                    registry.AddBroadcastAction(type, (@event, cancellationToken) =>
-                        (Task) eventDispatcherType.GetMethod(nameof(eventDispatcher.PublishAsync))
-                            ?.MakeGenericMethod(type)
-                            .Invoke(eventDispatcher, new[] {@event, cancellationToken}));
-                }
-
-                return registry;
-            });
-        }
+            return registry;
+        });
     }
 }

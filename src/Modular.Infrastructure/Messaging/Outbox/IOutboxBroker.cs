@@ -1,11 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Modular.Abstractions.Messaging;
 
-namespace Modular.Infrastructure.Messaging.Outbox
+namespace Modular.Infrastructure.Messaging.Outbox;
+
+public interface IOutboxBroker
 {
-    public interface IOutboxBroker
-    {
-        bool Enabled { get; }
-        Task SendAsync(params IMessage[] messages);
-    }
+    bool Enabled { get; }
+    Task SendAsync(params IMessage[] messages);
 }

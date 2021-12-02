@@ -1,9 +1,8 @@
 using System;
 
-namespace Modular.Infrastructure.Security.Encryption
+namespace Modular.Infrastructure.Security.Encryption;
+
+[AttributeUsage(AttributeTargets.Property)]
+public class HashedAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Property)]
-    public class HashedAttribute : Attribute
-    {
-    }
 }

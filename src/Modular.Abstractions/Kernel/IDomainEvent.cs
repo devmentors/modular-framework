@@ -1,6 +1,5 @@
-﻿namespace Modular.Abstractions.Kernel
+﻿namespace Modular.Abstractions.Kernel;
+
+public interface IDomainEvent
 {
-    public interface IDomainEvent
-    {
-    }
 }

@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace Modular.Abstractions.Exceptions
+namespace Modular.Abstractions.Exceptions;
+
+public abstract class ModularException : Exception
 {
-    public abstract class ModularException : Exception
+    protected ModularException(string message) : base(message)
     {
-        protected ModularException(string message) : base(message)
-        {
-        }
     }
 }

@@ -1,7 +1,6 @@
-namespace Modular.Infrastructure.Security.Encryption
+namespace Modular.Infrastructure.Security.Encryption;
+
+public interface IHasher
 {
-    public interface IHasher
-    {
-        string Hash(string data);
-    }
+    string Hash(string data);
 }

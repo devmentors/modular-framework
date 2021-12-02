@@ -1,9 +1,8 @@
 using System.Threading.Tasks;
 
-namespace Modular.Infrastructure
+namespace Modular.Infrastructure;
+
+public interface IInitializer
 {
-    public interface IInitializer
-    {
-        Task InitAsync();
-    }
+    Task InitAsync();
 }

@@ -1,10 +1,9 @@
 ﻿using System;
 
-namespace Modular.Infrastructure
+namespace Modular.Infrastructure;
+
+// Marker
+[AttributeUsage(AttributeTargets.Class)]
+public class DecoratorAttribute : Attribute
 {
-    // Marker
-    [AttributeUsage(AttributeTargets.Class)]
-    public class DecoratorAttribute : Attribute
-    {
-    }
 }

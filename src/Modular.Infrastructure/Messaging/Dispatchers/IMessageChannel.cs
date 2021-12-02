@@ -1,10 +1,9 @@
 ﻿using System.Threading.Channels;
 
-namespace Modular.Infrastructure.Messaging.Dispatchers
+namespace Modular.Infrastructure.Messaging.Dispatchers;
+
+public interface IMessageChannel
 {
-    public interface IMessageChannel
-    {
-        ChannelReader<MessageEnvelope> Reader { get; }
-        ChannelWriter<MessageEnvelope> Writer { get; }
-    }
+    ChannelReader<MessageEnvelope> Reader { get; }
+    ChannelWriter<MessageEnvelope> Writer { get; }
 }

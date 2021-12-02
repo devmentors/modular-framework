@@ -1,7 +1,6 @@
-﻿namespace Modular.Infrastructure.Cache
+﻿namespace Modular.Infrastructure.Cache;
+
+public class RedisOptions
 {
-    public class RedisOptions
-    {
-        public string ConnectionString { get; set; }
-    }
+    public string ConnectionString { get; set; }
 }

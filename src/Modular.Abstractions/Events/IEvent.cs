@@ -1,9 +1,8 @@
 ﻿using Modular.Abstractions.Messaging;
 
-namespace Modular.Abstractions.Events
+namespace Modular.Abstractions.Events;
+
+// Marker
+public interface IEvent : IMessage
 {
-    // Marker
-    public interface IEvent : IMessage
-    {
-    }
 }

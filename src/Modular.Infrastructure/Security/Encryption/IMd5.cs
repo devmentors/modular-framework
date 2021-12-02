@@ -1,7 +1,6 @@
-namespace Modular.Infrastructure.Security.Encryption
+namespace Modular.Infrastructure.Security.Encryption;
+
+public interface IMd5
 {
-    public interface IMd5
-    {
-        string Calculate(string value);
-    }
+    string Calculate(string value);
 }

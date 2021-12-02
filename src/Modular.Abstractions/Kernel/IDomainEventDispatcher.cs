@@ -1,11 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Modular.Abstractions.Kernel
+namespace Modular.Abstractions.Kernel;
+
+public interface IDomainEventDispatcher
 {
-    public interface IDomainEventDispatcher
-    {
-        Task DispatchAsync(IDomainEvent @event, CancellationToken cancellationToken = default);
-        Task DispatchAsync(IDomainEvent[] events, CancellationToken cancellationToken = default);
-    }
+    Task DispatchAsync(IDomainEvent @event, CancellationToken cancellationToken = default);
+    Task DispatchAsync(IDomainEvent[] events, CancellationToken cancellationToken = default);
 }

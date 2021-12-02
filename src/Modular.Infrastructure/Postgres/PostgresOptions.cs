@@ -1,7 +1,6 @@
-﻿namespace Modular.Infrastructure.Postgres
+﻿namespace Modular.Infrastructure.Postgres;
+
+public class PostgresOptions
 {
-    public class PostgresOptions
-    {
-        public string ConnectionString { get; set; }
-    }
+    public string ConnectionString { get; set; }
 }

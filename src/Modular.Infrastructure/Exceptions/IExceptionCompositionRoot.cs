@@ -1,10 +1,9 @@
 ﻿using System;
 using Modular.Abstractions.Exceptions;
 
-namespace Modular.Infrastructure.Exceptions
+namespace Modular.Infrastructure.Exceptions;
+
+public interface IExceptionCompositionRoot
 {
-    public interface IExceptionCompositionRoot
-    {
-        ExceptionResponse Map(Exception exception);
-    }
+    ExceptionResponse Map(Exception exception);
 }

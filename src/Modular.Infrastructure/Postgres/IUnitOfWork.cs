@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Modular.Infrastructure.Postgres
+namespace Modular.Infrastructure.Postgres;
+
+public interface IUnitOfWork
 {
-    public interface IUnitOfWork
-    {
-        Task ExecuteAsync(Func<Task> action);
-    }
+    Task ExecuteAsync(Func<Task> action);
 }

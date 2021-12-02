@@ -1,9 +1,8 @@
 ﻿using Modular.Abstractions.Messaging;
 
-namespace Modular.Infrastructure.Messaging.Contexts
+namespace Modular.Infrastructure.Messaging.Contexts;
+
+public interface IMessageContextRegistry
 {
-    public interface IMessageContextRegistry
-    {
-        void Set(IMessage message, IMessageContext context);
-    }
+    void Set(IMessage message, IMessageContext context);
 }
