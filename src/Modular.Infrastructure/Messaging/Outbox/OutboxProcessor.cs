@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Modular.Infrastructure.Messaging.Outbox;
 
@@ -18,14 +19,14 @@ public class OutboxProcessor : BackgroundService
     private readonly TimeSpan _startDelay;
     private int _isProcessing;
 
-    public OutboxProcessor(IServiceScopeFactory serviceScopeFactory, OutboxOptions outboxOptions,
+    public OutboxProcessor(IServiceScopeFactory serviceScopeFactory, IOptions<OutboxOptions> outboxOptions,
         ILogger<OutboxProcessor> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
-        _enabled = outboxOptions.Enabled;
-        _interval = outboxOptions.Interval ?? TimeSpan.FromSeconds(1);
-        _startDelay = outboxOptions.StartDelay ?? TimeSpan.FromSeconds(5);
+        _enabled = outboxOptions.Value.Enabled;
+        _interval = outboxOptions.Value.Interval ?? TimeSpan.FromSeconds(1);
+        _startDelay = outboxOptions.Value.StartDelay ?? TimeSpan.FromSeconds(5);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

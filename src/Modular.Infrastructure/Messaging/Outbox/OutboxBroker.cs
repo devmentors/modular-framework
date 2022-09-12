@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Modular.Abstractions.Messaging;
 
 namespace Modular.Infrastructure.Messaging.Outbox;
@@ -10,11 +11,12 @@ public class OutboxBroker : IOutboxBroker
     private readonly IServiceProvider _serviceProvider;
     private readonly OutboxTypeRegistry _registry;
 
-    public OutboxBroker(IServiceProvider serviceProvider, OutboxTypeRegistry registry, OutboxOptions options)
+    public OutboxBroker(IServiceProvider serviceProvider, OutboxTypeRegistry registry,
+        IOptions<OutboxOptions> options)
     {
         _serviceProvider = serviceProvider;
         _registry = registry;
-        Enabled = options.Enabled;
+        Enabled = options.Value.Enabled;
     }
 
     public bool Enabled { get; }

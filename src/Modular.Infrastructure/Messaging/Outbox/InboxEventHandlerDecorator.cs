@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Modular.Abstractions.Events;
 using Modular.Abstractions.Messaging;
 
@@ -18,13 +19,14 @@ public class InboxEventHandlerDecorator<T> : IEventHandler<T> where T : class, I
     private readonly bool _enabled;
 
     public InboxEventHandlerDecorator(IEventHandler<T> handler, IServiceProvider serviceProvider,
-        IMessageContextProvider messageContextProvider, InboxTypeRegistry inboxTypeRegistry, OutboxOptions options)
+        IMessageContextProvider messageContextProvider, InboxTypeRegistry inboxTypeRegistry,
+        IOptions<OutboxOptions> options)
     {
         _handler = handler;
         _serviceProvider = serviceProvider;
         _messageContextProvider = messageContextProvider;
         _inboxTypeRegistry = inboxTypeRegistry;
-        _enabled = options.Enabled;
+        _enabled = options.Value.Enabled;
     }
 
     public async Task HandleAsync(T @event, CancellationToken cancellationToken = default)

@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Modular.Infrastructure.Security.Encryption;
@@ -7,9 +8,10 @@ namespace Modular.Infrastructure.Security;
 
 public static class Extensions
 {
-    public static IServiceCollection AddSecurity(this IServiceCollection services)
+    public static IServiceCollection AddSecurity(this IServiceCollection services, IConfiguration configuration)
     {
-        var securityOptions = services.GetOptions<SecurityOptions>("security");
+        var section = configuration.GetSection("security");
+        var securityOptions = section.GetOptions<SecurityOptions>();
         using (var serviceProvider = services.BuildServiceProvider())
         {
             var logger = serviceProvider.GetRequiredService<ILogger<ISecurityProvider>>();
@@ -34,7 +36,7 @@ public static class Extensions
         }
 
         return services
-            .AddSingleton(securityOptions)
+            .Configure<SecurityOptions>(section)
             .AddSingleton<ISecurityProvider, SecurityProvider>()
             .AddSingleton<IEncryptor, Encryptor>()
             .AddSingleton<IHasher, Hasher>()

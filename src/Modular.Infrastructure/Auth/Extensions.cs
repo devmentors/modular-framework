@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Modular.Abstractions.Auth;
@@ -17,13 +18,18 @@ namespace Modular.Infrastructure.Auth;
 
 public static class Extensions
 {
+    private const string SectionName = "auth";
     private const string AccessTokenCookieName = "__access-token";
     private const string AuthorizationHeader = "authorization";
 
-    public static IServiceCollection AddAuth(this IServiceCollection services, IList<IModule> modules = null,
-        Action<JwtBearerOptions> optionsFactory = null)
+    public static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration,
+        IEnumerable<IModule> modules = null, Action<JwtBearerOptions> optionsFactory = null)
     {
-        var options = services.GetOptions<AuthOptions>("auth");
+        var authSection = configuration.GetSection(SectionName);
+        var cookieSection = configuration.GetSection($"{SectionName}:cookie");
+        var options = authSection.GetOptions<AuthOptions>();
+        services.Configure<AuthOptions>(authSection);
+        services.Configure<AuthOptions.CookieOptions>(cookieSection);
         services.AddSingleton<IAuthManager, AuthManager>();
 
         if (options.AuthenticationDisabled)
@@ -124,8 +130,6 @@ public static class Extensions
                 optionsFactory?.Invoke(o);
             });
 
-        services.AddSingleton(options);
-        services.AddSingleton(options.Cookie);
         services.AddSingleton(tokenValidationParameters);
 
         var policies = modules?.SelectMany(x => x.Policies ?? Enumerable.Empty<string>()) ??
@@ -154,7 +158,7 @@ public static class Extensions
             if (ctx.Request.Cookies.ContainsKey(AccessTokenCookieName))
             {
                 var authenticateResult = await ctx.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
-                if (authenticateResult.Succeeded && authenticateResult.Principal is not null)
+                if (authenticateResult.Succeeded)
                 {
                     ctx.User = authenticateResult.Principal;
                 }

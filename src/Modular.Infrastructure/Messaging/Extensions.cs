@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Modular.Abstractions.Messaging;
 using Modular.Infrastructure.Messaging.Brokers;
 using Modular.Infrastructure.Messaging.Contexts;
@@ -10,7 +11,7 @@ public static class Extensions
 {
     private const string SectionName = "messaging";
         
-    public static IServiceCollection AddMessaging(this IServiceCollection services)
+    public static IServiceCollection AddMessaging(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddTransient<IMessageBroker, InMemoryMessageBroker>();
         services.AddTransient<IAsyncMessageDispatcher, AsyncMessageDispatcher>();
@@ -18,8 +19,9 @@ public static class Extensions
         services.AddSingleton<IMessageContextProvider, MessageContextProvider>();
         services.AddSingleton<IMessageContextRegistry, MessageContextRegistry>();
 
-        var messagingOptions = services.GetOptions<MessagingOptions>(SectionName);
-        services.AddSingleton(messagingOptions);
+        var section = configuration.GetSection(SectionName);
+        var messagingOptions = section.GetOptions<MessagingOptions>();
+        services.Configure<MessagingOptions>(section);
 
         if (messagingOptions.UseAsyncDispatcher)
         {

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Modular.Abstractions.Time;
 
 namespace Modular.Infrastructure.Messaging.Outbox;
@@ -20,15 +21,15 @@ public class InboxCleanupProcessor : BackgroundService
     private readonly TimeSpan _startDelay;
     private int _isProcessing;
 
-    public InboxCleanupProcessor(IServiceScopeFactory serviceScopeFactory, OutboxOptions outboxOptions,
+    public InboxCleanupProcessor(IServiceScopeFactory serviceScopeFactory, IOptions<OutboxOptions> outboxOptions,
         IClock clock, ILogger<InboxCleanupProcessor> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _clock = clock;
         _logger = logger;
-        _enabled = outboxOptions.Enabled;
-        _interval = outboxOptions.InboxCleanupInterval ?? TimeSpan.FromHours(1);
-        _startDelay = outboxOptions.StartDelay ?? TimeSpan.FromSeconds(5);
+        _enabled = outboxOptions.Value.Enabled;
+        _interval = outboxOptions.Value.InboxCleanupInterval ?? TimeSpan.FromHours(1);
+        _startDelay = outboxOptions.Value.StartDelay ?? TimeSpan.FromSeconds(5);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

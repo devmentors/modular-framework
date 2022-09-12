@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Modular.Abstractions.Messaging;
 using Modular.Abstractions.Modules;
 using Modular.Abstractions.Time;
@@ -24,15 +25,15 @@ public sealed class EfOutbox<T> : IOutbox where T : DbContext
     private readonly IModuleClient _moduleClient;
     private readonly IAsyncMessageDispatcher _asyncMessageDispatcher;
     private readonly IJsonSerializer _jsonSerializer;
-    private readonly MessagingOptions _messagingOptions;
     private readonly ILogger<EfOutbox<T>> _logger;
+    private readonly bool _useAsyncDispatcher;
 
     public bool Enabled { get; }
 
     public EfOutbox(T dbContext, IMessageContextRegistry messageContextRegistry,
         IMessageContextProvider messageContextProvider, IClock clock, IModuleClient moduleClient,
         IAsyncMessageDispatcher asyncMessageDispatcher, IJsonSerializer jsonSerializer,
-        MessagingOptions messagingOptions, OutboxOptions outboxOptions,  ILogger<EfOutbox<T>> logger)
+        IOptions<MessagingOptions> messagingOptions, IOptions<OutboxOptions> outboxOptions,  ILogger<EfOutbox<T>> logger)
     {
         _dbContext = dbContext;
         _set = dbContext.Set<OutboxMessage>();
@@ -42,9 +43,9 @@ public sealed class EfOutbox<T> : IOutbox where T : DbContext
         _moduleClient = moduleClient;
         _asyncMessageDispatcher = asyncMessageDispatcher;
         _jsonSerializer = jsonSerializer;
-        _messagingOptions = messagingOptions;
+        _useAsyncDispatcher = messagingOptions.Value.UseAsyncDispatcher;
         _logger = logger;
-        Enabled = outboxOptions.Enabled;
+        Enabled = outboxOptions.Value.Enabled;
     }
 
     public async Task SaveAsync(params IMessage[] messages)
@@ -128,7 +129,7 @@ public sealed class EfOutbox<T> : IOutbox where T : DbContext
             _logger.LogInformation("Publishing a message from outbox ('{Module}'): {Name} [Message ID: {MessageId}, Correlation ID: {CorrelationId}]...",
                 module, name, messageId, correlationId);
 
-            if (_messagingOptions.UseAsyncDispatcher)
+            if (_useAsyncDispatcher)
             {
                 await _asyncMessageDispatcher.PublishAsync(message);
             }

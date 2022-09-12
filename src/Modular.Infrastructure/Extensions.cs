@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Modular.Abstractions;
 using Modular.Abstractions.Dispatchers;
 using Modular.Abstractions.Modules;
 using Modular.Abstractions.Storage;
@@ -35,33 +36,30 @@ namespace Modular.Infrastructure;
 
 public static class Extensions
 {
+    private const string AppSectionName = "app";
     private const string CorrelationIdKey = "correlation-id";
         
     public static IServiceCollection AddInitializer<T>(this IServiceCollection services) where T : class, IInitializer
         => services.AddTransient<IInitializer, T>();
         
     public static IServiceCollection AddModularInfrastructure(this IServiceCollection services,
-        IList<Assembly> assemblies, IList<IModule> modules) 
+        IConfiguration configuration, IList<Assembly> assemblies, IList<IModule> modules) 
     {
         var disabledModules = new List<string>();
-        using (var serviceProvider = services.BuildServiceProvider())
+        foreach (var (key, value) in configuration.AsEnumerable())
         {
-            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-            foreach (var (key, value) in configuration.AsEnumerable())
+            if (!key.Contains(":module:enabled"))
             {
-                if (!key.Contains(":module:enabled"))
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                if (!bool.Parse(value))
-                {
-                    disabledModules.Add(key.Split(":")[0]);
-                }
+            if (!bool.Parse(value))
+            {
+                disabledModules.Add(key.Split(":")[0]);
             }
         }
 
-        services.AddCorsPolicy();
+        services.AddCorsPolicy(configuration);
         services.AddSwaggerGen(swagger =>
         {
             swagger.EnableAnnotations();
@@ -73,8 +71,12 @@ public static class Extensions
             });
         });
 
-        var appOptions = services.GetOptions<AppOptions>("app");
-        services.AddSingleton(appOptions);
+        var appOptionsSection = configuration.GetSection(AppSectionName);
+        services.Configure<AppOptions>(appOptionsSection);
+        
+        var appOptions = configuration.GetAppOptions();
+        var appInfo = new AppInfo(appOptions.Name, appOptions.Version);
+        services.AddSingleton(appInfo);
 
         services.AddMemoryCache();
         services.AddHttpClient();
@@ -83,16 +85,16 @@ public static class Extensions
         services.AddSingleton<IJsonSerializer, SystemTextJsonSerializer>();
         services.AddModuleInfo(modules);
         services.AddModuleRequests(assemblies);
-        services.AddAuth(modules);
+        services.AddAuth(configuration, modules);
         services.AddErrorHandling();
         services.AddContext();
         services.AddCommands(assemblies);
         services.AddQueries(assemblies);
         services.AddEvents(assemblies);
         services.AddDomainEvents(assemblies);
-        services.AddMessaging();
-        services.AddSecurity();
-        services.AddOutbox();
+        services.AddMessaging(configuration);
+        services.AddSecurity(configuration);
+        services.AddOutbox(configuration);
         services.AddSingleton<IClock, UtcClock>();
         services.AddSingleton<IDispatcher, InMemoryDispatcher>();
         services.AddControllers()
@@ -142,17 +144,16 @@ public static class Extensions
         return app;
     }
 
-    public static T GetOptions<T>(this IServiceCollection services, string sectionName) where T : new()
-    {
-        using var serviceProvider = services.BuildServiceProvider();
-        var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-        return configuration.GetOptions<T>(sectionName);
-    }
-
+    public static AppOptions GetAppOptions(this IConfiguration configuration)
+        => configuration.GetOptions<AppOptions>(AppSectionName);
+    
     public static T GetOptions<T>(this IConfiguration configuration, string sectionName) where T : new()
+        => configuration.GetSection(sectionName).GetOptions<T>();
+        
+    public static T GetOptions<T>(this IConfigurationSection section) where T : new()
     {
         var options = new T();
-        configuration.GetSection(sectionName).Bind(options);
+        section.Bind(options);
         return options;
     }
 

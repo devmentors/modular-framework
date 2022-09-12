@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Humanizer;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Modular.Abstractions.Contexts;
 using Modular.Abstractions.Messaging;
 using Modular.Abstractions.Modules;
@@ -20,19 +21,19 @@ public sealed class InMemoryMessageBroker : IMessageBroker
     private readonly IContext _context;
     private readonly IOutboxBroker _outboxBroker;
     private readonly IMessageContextRegistry _messageContextRegistry;
-    private readonly MessagingOptions _messagingOptions;
+    private readonly bool _useAsyncDispatcher;
     private readonly ILogger<InMemoryMessageBroker> _logger;
 
     public InMemoryMessageBroker(IModuleClient moduleClient, IAsyncMessageDispatcher asyncMessageDispatcher,
         IContext context, IOutboxBroker outboxBroker, IMessageContextRegistry messageContextRegistry,
-        MessagingOptions messagingOptions,ILogger<InMemoryMessageBroker> logger)
+        IOptions<MessagingOptions> messagingOptions, ILogger<InMemoryMessageBroker> logger)
     {
         _moduleClient = moduleClient;
         _asyncMessageDispatcher = asyncMessageDispatcher;
         _context = context;
         _outboxBroker = outboxBroker;
         _messageContextRegistry = messageContextRegistry;
-        _messagingOptions = messagingOptions;
+        _useAsyncDispatcher = messagingOptions.Value.UseAsyncDispatcher;
         _logger = logger;
     }
 
@@ -41,7 +42,7 @@ public sealed class InMemoryMessageBroker : IMessageBroker
 
     public Task PublishAsync(IMessage[] messages, CancellationToken cancellationToken = default)
         => PublishAsync(cancellationToken, messages);
-        
+
     private async Task PublishAsync(CancellationToken cancellationToken, params IMessage[] messages)
     {
         if (messages is null)
@@ -60,7 +61,7 @@ public sealed class InMemoryMessageBroker : IMessageBroker
         {
             var messageContext = new MessageContext(Guid.NewGuid(), _context);
             _messageContextRegistry.Set(message, messageContext);
-                
+
             var module = message.GetModuleName();
             var name = message.GetType().Name.Underscore();
             var requestId = _context.RequestId;
@@ -68,8 +69,9 @@ public sealed class InMemoryMessageBroker : IMessageBroker
             var userId = _context.Identity?.Id;
             var messageId = messageContext.MessageId;
             var correlationId = messageContext.Context.CorrelationId;
-                
-            _logger.LogInformation("Publishing a message: {Name} ({Module}) [Request ID: {RequestId}, Message ID: {MessageId}, Correlation ID: {CorrelationId}, Trace ID: '{TraceId}', User ID: '{UserId}]...",
+
+            _logger.LogInformation(
+                "Publishing a message: {Name} ({Module}) [Request ID: {RequestId}, Message ID: {MessageId}, Correlation ID: {CorrelationId}, Trace ID: '{TraceId}', User ID: '{UserId}]...",
                 name, module, requestId, messageId, correlationId, traceId, userId);
         }
 
@@ -79,7 +81,7 @@ public sealed class InMemoryMessageBroker : IMessageBroker
             return;
         }
 
-        var tasks = _messagingOptions.UseAsyncDispatcher
+        var tasks = _useAsyncDispatcher
             ? messages.Select(message => _asyncMessageDispatcher.PublishAsync(message, cancellationToken))
             : messages.Select(message => _moduleClient.PublishAsync(message, cancellationToken));
 

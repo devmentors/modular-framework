@@ -3,6 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Modular.Infrastructure.Api;
@@ -39,12 +40,13 @@ public static class Extensions
         return model;
     }
 
-    public static IServiceCollection AddCorsPolicy(this IServiceCollection services)
+    public static IServiceCollection AddCorsPolicy(this IServiceCollection services, IConfiguration configuration)
     {
-        var corsOptions = services.GetOptions<CorsOptions>("cors");
+        var section = configuration.GetSection("cors");
+        var corsOptions = section.GetOptions<CorsOptions>();
+        services.Configure<CorsOptions>(section);
             
         return services
-            .AddSingleton(corsOptions)
             .AddCors(cors =>
             {
                 var allowedHeaders = corsOptions.AllowedHeaders ?? Enumerable.Empty<string>();

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Modular.Abstractions.Events;
 
@@ -6,9 +7,11 @@ namespace Modular.Infrastructure.Messaging.Outbox;
 
 public static class Extensions
 {
-    public static IServiceCollection AddOutbox<T>(this IServiceCollection services) where T : DbContext
+    private const string SectionName = "outbox";
+    
+    public static IServiceCollection AddOutbox<T>(this IServiceCollection services, IConfiguration configuration) where T : DbContext
     {
-        var outboxOptions = services.GetOptions<OutboxOptions>("outbox");
+        var outboxOptions = configuration.GetOptions<OutboxOptions>(SectionName);
         if (!outboxOptions.Enabled)
         {
             return services;
@@ -26,10 +29,11 @@ public static class Extensions
         return services;
     }
 
-    public static IServiceCollection AddOutbox(this IServiceCollection services)
+    public static IServiceCollection AddOutbox(this IServiceCollection services, IConfiguration configuration)
     {
-        var outboxOptions = services.GetOptions<OutboxOptions>("outbox");
-        services.AddSingleton(outboxOptions);
+        var section = configuration.GetSection(SectionName);
+        var outboxOptions = section.GetOptions<OutboxOptions>();
+        services.Configure<OutboxOptions>(section);
         services.AddSingleton(new InboxTypeRegistry());
         services.AddSingleton(new OutboxTypeRegistry());
         services.AddSingleton<IOutboxBroker, OutboxBroker>();
