@@ -24,7 +24,7 @@ public class ContractRegistry : IContractRegistry
         _logger = logger;
     }
 
-    public IContractRegistry Register<T>() where T : class
+    public IContractRegistry Register<T>() where T : class, IContract
     {
         var contract = GetContractType<T>();
         _contracts.Add(contract);
