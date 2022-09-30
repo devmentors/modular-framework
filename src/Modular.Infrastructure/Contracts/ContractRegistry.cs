@@ -217,7 +217,7 @@ public class ContractRegistry : IContractRegistry
         }
     }
         
-    private class Empty
+    private class Empty : IMessage
     {
     }
         

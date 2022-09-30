@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
+using Modular.Abstractions.Messaging;
 
 namespace Modular.Abstractions.Contracts;
 
-public abstract class Contract<T> : IContract where T : class
+public abstract class Contract<T> : IContract where T : class, IMessage
 {
     private readonly ISet<string> _required = new HashSet<string>();
     public Type Type { get; } = typeof(T);
