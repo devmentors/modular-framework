@@ -24,7 +24,7 @@ public class ContractRegistry : IContractRegistry
         _logger = logger;
     }
 
-    public IContractRegistry Register<T>() where T : class
+    public IContractRegistry Register<T>() where T : class, IContract
     {
         var contract = GetContractType<T>();
         _contracts.Add(contract);
@@ -78,7 +78,7 @@ public class ContractRegistry : IContractRegistry
                 throw new ContractException($"Request registration was not found for path: '{path}'.");
             }
 
-            _logger.LogTrace($"Validating the contracts for path: '{path}'...");
+            _logger.LogTrace("Validating the contracts for path: {Path}", path);
             if (requestType != typeof(Empty))
             {
                 ValidateContract(requestType, path);
@@ -89,7 +89,7 @@ public class ContractRegistry : IContractRegistry
                 ValidateContract(responseType, path);
             }
 
-            _logger.LogTrace($"Validated the contracts for path: '{path}'.");
+            _logger.LogTrace("Validated the contracts for path: {Path}", path);
         }
     }
 
@@ -129,8 +129,11 @@ public class ContractRegistry : IContractRegistry
             throw new ContractException($"Contract: '{contractName}' was not found in module: '{module}'.");
         }
 
-        _logger.LogTrace($"Validating the contract for: '{contractName}', " +
-                         $"from module: '{contractModule}', original module: '{module}'...");
+        _logger.LogTrace(
+            "Validating the contract for: '{ContractName}', from module: '{ContractModule}', original module: '{Module}'",
+            contractName,
+            contractModule,
+            module);
 
         var originalContract = FormatterServices.GetUninitializedObject(originalType);
         var originalContractType = originalContract.GetType();
@@ -144,8 +147,11 @@ public class ContractRegistry : IContractRegistry
                 contractModule, path);
         }
 
-        _logger.LogTrace($"Successfully validated the contract for: '{contractName}', " +
-                         $"from module: '{contractModule}', original module: '{module}'.");
+        _logger.LogTrace(
+            "Successfully validated the contract for: '{ContractName}', from module: '{ContractModule}', original module: '{Module}'",
+            contractName,
+            contractModule,
+            module);
     }
 
     private static void ValidateProperty(PropertyInfo localProperty, PropertyInfo originalProperty,
@@ -211,7 +217,7 @@ public class ContractRegistry : IContractRegistry
         }
     }
         
-    private class Empty
+    private class Empty : IMessage
     {
     }
         

@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.Reflection;
+using Modular.Abstractions.Contracts;
 
 namespace Modular.Infrastructure.Contracts;
 
 public interface IContractRegistry
 {
-    IContractRegistry Register<T>() where T : class;
+    IContractRegistry Register<T>() where T : class, IContract;
 
     IContractRegistry RegisterPath(string path);
 
